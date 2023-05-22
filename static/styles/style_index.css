@@ -1,0 +1,45 @@
+      
+    body{
+        margin: 0;
+    }
+
+    .form-container {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f8f8;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    h1 {
+        background-color: #2F55E0;
+        color: #fff;
+        padding: 10px;
+        margin-top: 21px;
+    }
+    .form-container h2 {
+        text-align: center;
+    }
+
+    .form-container label, .form-container input {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .form-container input[type="submit"] {
+        margin-top: 10px;
+        background-color: #2F55E0;
+        color: #fff;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .mensagem-sucesso-ver-fila {
+        display: flex;
+        margin-top: 8px;
+    }
+    .mensagem-sucesso-ver-fila div {
+        margin-right: 6px;
+    }

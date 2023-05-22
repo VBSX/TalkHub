@@ -1,0 +1,75 @@
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background-color: #2F55E0;
+    color: #fff;
+    /* padding: 20px; */
+    transition: left 0.3s ease;
+    z-index: 2; /* Adiciona uma posição de empilhamento maior para a sidebar */
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.menu {
+    position: relative;
+    z-index: 1; /* Adiciona uma posição de empilhamento para o botão de menu */
+    }
+
+
+#menu-button {
+    background-color: #2F55E0;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px;
+    }
+
+    .mensagem-sucesso {
+        background-color: #4CAF50; 
+        color: #fff; 
+        padding: 10px; 
+        margin-top: 10px; 
+    }
+
+    #header {
+        text-align: center; 
+        margin-top: 20px; 
+    }
+
+    #header img {
+        max-width: 10%; 
+    }
+    #close-button {
+        display: flex;
+        justify-content: center;
+        background-color: #2F55E0;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        padding: 3px;
+        border-radius: 20px;
+        margin-top: 10px;
+        font-size: 25px ;
+    }
+
+    .sidebar a {
+        display: block;
+        padding: 10px;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .sidebar a:hover {
+        background-color: #ddd;
+    }
+
+    .sidebar a#queue-link {
+        color: #ff0000; /* Defina a cor desejada */
+    }

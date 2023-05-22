@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.min.js" integrity="sha512-Zc85ChVzWfx4Bhl56lIZ8c8XSlX79g50uhms3WfQoKBHvS1vX/z80zbe6WwmIwx8A0Y5zDAGJDZTMzBFgnmZMQ==" crossorigin="anonymous"></script>
+
+
+</head>
+<body>
+    <!-- <h1>Chat</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="message" placeholder="Digite sua mensagem..." />
+    <button onclick="sendMessage()">Enviar</button> -->
+
+    <form onsubmit="sendMessage(); return false;">
+        <input type="text" id="recipient" placeholder="Destinatário">
+        <input type="text" id="message" placeholder="Mensagem">
+        <input type="submit" value="Enviar">
+    </form>
+    
+    <script type="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+    
+        function sendMessage() {
+            var recipient = document.getElementById('recipient').value;
+            var message = document.getElementById('message').value;
+    
+            socket.emit('send_message', {
+                recipient: recipient,
+                message: message
+            });
+    
+            // Limpe os campos de entrada após o envio da mensagem
+            document.getElementById('recipient').value = '';
+            document.getElementById('message').value = '';
+        }
+    
+        socket.on('message_received', function(data) {
+            var sender = data.sender;
+            var message = data.message;
+    
+            // Faça algo com a mensagem recebida, como exibi-la na interface do chat
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+.image-git{
+    color: #25D366;
+    height: 32px;
+    font-weight: bold;
+    margin: 32px;
+
+    margin-left: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    }
