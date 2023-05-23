@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Display</title>
+</head>
+<body>
+    <h1>Chat: {{ slug }}</h1>
+    
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

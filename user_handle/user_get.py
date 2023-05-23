@@ -50,9 +50,5 @@ class User():
         self.session.close()
         return result[0][0]
     
-    
-    
-    
-  
 if __name__ == '__main__':
     User('user1')

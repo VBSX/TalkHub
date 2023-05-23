@@ -3,20 +3,41 @@
 <head>
     <title>Chat</title>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.min.js" integrity="sha512-Zc85ChVzWfx4Bhl56lIZ8c8XSlX79g50uhms3WfQoKBHvS1vX/z80zbe6WwmIwx8A0Y5zDAGJDZTMzBFgnmZMQ==" crossorigin="anonymous"></script>
-
-
+    <link rel="stylesheet" href="static/styles/index.css">
 </head>
 <body>
     <!-- <h1>Chat</h1>
     <div id="chatbox"></div>
     <input type="text" id="message" placeholder="Digite sua mensagem..." />
     <button onclick="sendMessage()">Enviar</button> -->
-
-    <form onsubmit="sendMessage(); return false;">
+    <!-- <form onsubmit="sendMessage(); return false;">
         <input type="text" id="recipient" placeholder="Destinatário">
         <input type="text" id="message" placeholder="Mensagem">
         <input type="submit" value="Enviar">
-    </form>
+    </form> -->
+    
+    <table>
+        <tr>
+            <th>Nome</th>
+            <th>Nome de usuário</th>
+            <th>Ação</th>
+        </tr>
+    {% for item in all_users %}
+        <tr>
+            <td>{{item[0]}}</td>
+            <td>{{item[2]}}</td>
+            <td class="buttons_table">
+                <form action="/start_chat" method="post">
+                    <input type="hidden" name="name" value="{{ item[0] }}">
+                    <input type="hidden" name="username" value="{{ item[2] }}">
+                    <input type="hidden" name="clien_id" value="{{ item[3] }}">
+                    <button type="submit" value="conversar">conversar</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+    <h1 id="message"></h1>
     
     <script type="text/javascript">
         var socket = io.connect('http://' + document.domain + ':' + location.port);
@@ -39,7 +60,7 @@
             var sender = data.sender;
             var message = data.message;
     
-            // Faça algo com a mensagem recebida, como exibi-la na interface do chat
+            
         });
     </script>
 </body>
