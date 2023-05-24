@@ -1,0 +1,12 @@
+.message-box {
+    display: flex;
+    border: 1px solid #ddd;
+    flex-direction: column;
+}
+
+.message-box-sender {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+    margin-right: 20px;
+}

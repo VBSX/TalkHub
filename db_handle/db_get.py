@@ -17,7 +17,7 @@ class DatabaseGet():
         result = self.session.execute(query).fetchall()
         self.session.close()
         return result
-
+    
 if __name__ == '__main__':
     db = DatabaseGet()
     print(db.get_all_users())

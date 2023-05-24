@@ -1,26 +1,33 @@
-from flask import Flask, render_template, redirect, url_for, request, session   
+from flask import Flask, render_template, redirect, url_for, request, session, request 
 from user_handle.modules.password_encrypt import PasswordCrypter
 from user_handle.user_get import User
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
+
+
 from db_handle.db_get import DatabaseGet
 from chat_handle.chat import ChatUsers
+from flask import jsonify
 
-class ChatApp:
+class ChatApp(Flask):
     def __init__(self):
-        self.app = Flask(__name__)
-        self.app.secret_key = 'My_Nice_secret_key'
+        super().__init__(__name__)
+        # self.app = Flask(__name__)
+        self.secret_key = 'My_Nice_secret_key'
         self.register_routes()
         self.crypter = PasswordCrypter()
-        self.socketio = SocketIO(self.app)
+        self.socketio = SocketIO(self)
         self.socketio.on_event('send_message', self.handle_message)
+        self.socketio.on_event('connect', self.handle_connect)
+
         self.db_get = DatabaseGet()
 
     def register_routes(self):
-        self.app.add_url_rule('/', 'index', self.index)
-        self.app.add_url_rule('/login', 'login', self.login, methods=['GET', 'POST'])
-        self.app.add_url_rule('/logout', 'logout', self.logout)
-        self.app.add_url_rule('/start_chat', 'start_chat', self.start_chat, methods=['POST'])
-        self.app.add_url_rule('/display/<slug>', 'display', self.display, methods=['GET'])
+        self.route('/')(self.index)
+        self.route('/login', methods=['GET', 'POST'])(self.login)
+        self.route('/logout')(self.logout)
+        self.route('/start_chat', methods=['POST'])(self.start_chat)
+        self.route('/display/<chat_name>/<user1>/<user2>', methods=['GET','POST'])(self.display)
+        self.route('/send_message', methods=['POST'])(self.send_message)
 
 
     def index(self):
@@ -61,52 +68,62 @@ class ChatApp:
     def send_message(self):
         if 'username' in session:
             if request.method == 'POST':
-                recipient_username = request.form['recipient']
+                recipient_username = request.form['user_receptor']
                 message = request.form['message']
                 # Get the sender's user ID and client ID from the session
-                sender_id = session['user_id']
-                sender_client_id = session['client_id']
-                # Get the recipient's user ID and client ID
-                recipient = User(recipient_username)
-                recipient_id = recipient.user_id
-                recipient_client_id = recipient.client_id
-                return redirect(url_for('index'))
+                sender_username = session['username']
+                ChatUsers(sender_username, recipient_username).insert_new_message(message,  sender_username)
+                return jsonify({'status': 200, 'message': 'Mensagem enviada com sucesso!'})
         else:
-            return redirect(url_for('login'))    
+            return redirect(url_for('login'))   
+         
+ 
+    def handle_connect(self):
+        room = request.args.get('room')
+        sid = request.sid  # Get the session ID
+        join_room(room)
+        # Additional logic using the sid if needed
         
     def handle_message(self, data):
         if 'username' in session:
             sender_username = session['username']
-            recipient_username = data['recipient']    
+            chat_name = data['chatName']
             message = data['message']
-            emit('message_received', {'sender': sender_username, 'message': message}, room=recipient_username)
+            user_sender = data['userSender']
+            user_receptor = data['userReceptor']
 
+            # Criação da slug para a sala
+            slug = f'/display/{chat_name}/{user_sender}/{user_receptor}'
+
+            # Envia a mensagem apenas para os clientes na sala correspondente
+            emit('message_received', {'sender': sender_username, 'message': message}, room=slug)
     def start_chat(self):
         if request.method == 'POST':
             username_to_chat = request.form['username']
             username_of_starter_user = session['username']
-            
-            chat_users = ChatUsers(username_of_starter_user, username_to_chat)
-            messages = chat_users.get_all_messages()
-            chat_id = chat_users.chat_id
-            
-            slug = f'chat {username_of_starter_user}-{username_to_chat}'
-            return render_template('chat.html',slug=slug, messages=messages, user1=username_of_starter_user, user2=username_to_chat)
+            chat_name = f'chat{username_of_starter_user}{username_to_chat}'
+            return redirect(url_for('display',chat_name=chat_name, user1=username_of_starter_user, user2=username_to_chat))
 
-    
-    def display(slug):
-        messages = request.args.get('messages')
-        user1 = request.args.get('user1')
-        user2 = request.args.get('user2')
-        return render_template('display.html', messages=messages, user1=user1, user2=user2)
+    def display(self,chat_name,user1, user2):
+        if 'username' in session:
+            if session['username'] == user1 or session['username'] == user2:
+                chat_users = ChatUsers(user1, user2)
+                messages = chat_users.get_all_messages()
+                # Criação da slug para a sala
+                slug = f'/display/{chat_name}/{user1}/{user2}'
+
+                # Adiciona o cliente à sala correspondente
+                join_room(slug)
+                return render_template('chat.html',chat_name=chat_name, messages=messages, user1=user1, user2=user2)
+            else:
+                return redirect(url_for('index'))
+        else:
+            return redirect(url_for('login'))
 
     def logout(self):
         session.pop('username', None)
         return redirect(url_for('login'))
 
-    def run(self):
-        self.app.run(debug=True)
-
 if __name__ == '__main__':
-    auth_app = ChatApp()
-    auth_app.run()
+    app = ChatApp()
+    app.run(debug=True)

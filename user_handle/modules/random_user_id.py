@@ -1,6 +1,7 @@
 import hashlib
 import time
 
+
 def generate_random_user_id(string):
     # gera um id aleatório para o usuário, ele se baseia no tempo atual e uma string para criar, e necessita
     # ter um tamanho de 35 caracteres para ser um id válido 

@@ -2,14 +2,105 @@
 <html>
 <head>
     <title>Chat Display</title>
+    <link rel="stylesheet" href="/static/styles/chat.css">
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+
 </head>
 <body>
     <h1>Chat: {{ slug }}</h1>
     
-    <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-    </ul>
+    {% for message in messages %}
+    {% if message[3] == user1 %}
+        <!-- sender -->
+        <div class="message-box" style="background-color: bisque;">
+            <p>{{ message[1] }}</p>
+            <div class="message-box-sender">
+                <p></p>
+                <p>Você</p>
+            </div>
+        </div>
+    {% else %}
+        <!-- receptor -->
+        <div class="message-box" style="background-color: beige;">
+            <p>{{ message[1] }}</p>
+            <div class="message-box-sender">
+                <p>sender:</p>
+                <p>{{ message[3] }}</p>
+            </div>
+        </div>
+    {% endif %}
+    {% endfor %}
+    <form id="message-form">
+        <input type="hidden" name="chat_name" value="{{ chat_name }}">
+        <input type="hidden" name="user_sender" value="{{ user1 }}">
+        <input type="hidden" name="user_receptor" value="{{ user2 }}">
+        <input type="text" name="message" id="message_send">
+        <input type="button" value="enviar" onclick="submitForm()">
+    </form>
+    
+    <script>
+        var socket = io.connect('http://localhost:5000');
+    
+        // Manipular o evento de recebimento de mensagens do servidor
+        socket.on('message_received', function(data) {
+            // Lógica para lidar com a mensagem recebida do servidor
+            console.log('Mensagem recebida:', data);
+    
+            // Atualizar a interface do usuário com a mensagem recebida
+            // ...
+    
+            // Atualizar a página após receber uma nova mensagem
+            location.reload();
+        });
+    
+        // Função para enviar uma mensagem para o servidor
+        function sendMessage(data) {
+            // Enviar a mensagem para o servidor
+            socket.emit('message', data);
+        }
+    
+        function submitForm() {
+            var form = document.getElementById('message-form');
+            var formData = new FormData(form);
+    
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/send_message');
+    
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    console.log(xhr.responseText);
+                    // Optional: Update the UI or perform other actions upon successful submission
+                    // Chamar a função sendMessage() com os dados relevantes
+                    var chat_name = document.getElementById('chat_name').value;
+                    var message = document.getElementById('message_send').value;
+                    var userSender = document.getElementById('user_sender').value;
+                    var userReceptor = document.getElementById('user_receptor').value;
+                    
+    
+                    var data = {
+                        chat_name: chat_name,
+                        message: message,
+                        userSender: userSender,
+                        userReceptor: userReceptor
+                    };
+    
+                    sendMessage(data);
+                } else {
+                    console.error('Error:', xhr.status);
+                    // Optional: Handle error cases
+                }
+            };
+    
+            xhr.send(formData);
+        }
+    
+        // Adicionar o evento de escuta para o evento 'submit' do formulário
+        var form = document.getElementById('message-form');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Evitar o comportamento padrão de envio do formulário
+            submitForm();
+        });
+    </script>
+    
 </body>
 </html>

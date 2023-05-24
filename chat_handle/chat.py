@@ -16,29 +16,41 @@ class ChatUsers():
         engine = create_engine('sqlite:///db_handle/chat.db')
         Session = sessionmaker(bind=engine)
         self.session_db = Session()
-        exist_table = self.check_if_table_exist()
-        
-        if not exist_table:
+        table = self.check_if_table_exist()
+        if table == 'not_exist':
+            self.chat_name = f'chat{self.user1.user_id}{self.user2.user_id}'
             self.creat_chat_db()
-        
+        elif table == 'user1_main':
+            self.chat_name = f'chat{self.user1.user_id}{self.user2.user_id}'   
+            
+        elif table == 'user2_main':
+            self.chat_name = f'chat{self.user2.user_id}{self.user1.user_id}' 
+            
         self.chat_id = self.get_chat_id()
 
-        
-    
     def check_if_table_exist(self):
-        query = text(f"""SELECT name FROM sqlite_master WHERE type='table'
-            AND name='chat_{self.user1.user_id}_{self.user2.user_id}'; """)
-        result = self.session_db.execute(query).fetchall()
+        query1 = text(f"""SELECT name FROM sqlite_master WHERE type='table'
+            AND name='chat{self.user1.user_id}{self.user2.user_id}'; """)
+        result1 = self.session_db.execute(query1).fetchall()
+        query2 = text(f"""SELECT name FROM sqlite_master WHERE type='table'
+            AND name='chat{self.user2.user_id}{self.user1.user_id}'; """)
+        result2 = self.session_db.execute(query2).fetchall()
         self.session_db.close()
-        if result == []:
-            return False
-        else:
-            return True
+        if result1 == [] and result2 == []:
+            return 'not_exist'
+        elif result1 != [] and result2 != []:
+            return 'both_exist'
+        elif result1 != []:
+            return 'user1_main'
+        elif result2 != []:
+            return 'user2_main'
+
+        
                 
     def creat_chat_db(self):
         try:
             chat_id = generate_random_chat_id(self.user1.user_id+self.user2.user_id)
-            query = text(f"""CREATE TABLE IF NOT EXISTS chat_{self.user1.user_id}_{self.user2.user_id}(
+            query = text(f"""CREATE TABLE IF NOT EXISTS {self.chat_name}(
                 'id' INTEGER UNIQUE,
                 'message' TEXT,
                 'client_id' TEXT,
@@ -58,27 +70,27 @@ class ChatUsers():
   
     def get_all_messages(self):
         try:
-            query = text(f"""SELECT * FROM chat_{self.user1.user_id}_{self.user2.user_id}""")
+            query = text(f"""SELECT * FROM {self.chat_name}""")
             result = self.session_db.execute(query).fetchall()
             self.session_db.close()
             return result
         except Exception as e:
             print(e)
 
-    def insert_new_message(self, message, username):
+    def insert_new_message(self, message, username_sender):
         for user in [self.user1, self.user2]:
-            if user.username == username:
+            if user.username == username_sender:
 
                 client_id = user.user_id
                 break
             
         actual_date =  datetime.datetime.now()
         try:
-            query = text(f"""INSERT INTO chat_{self.user1.user_id}_{self.user2.user_id}(message, client_id, name, date, hour)
+            query = text(f"""INSERT INTO {self.chat_name}(message, client_id, name, date, hour)
                             VALUES(:message, :client_id, :name, :date, :hour)""")
             
             #client_id da pessoa que mandou a mensagem dentro do chat, assim como o "name"
-            self.session_db.execute(query, {'message': f'{message}', 'client_id': f'{client_id}', 'name': f'{username}', 'date': f'{actual_date.date()}','hour': f'{actual_date.hour}:{actual_date.minute}:{actual_date.second}'})
+            self.session_db.execute(query, {'message': f'{message}', 'client_id': f'{client_id}', 'name': f'{username_sender}', 'date': f'{actual_date.date()}','hour': f'{actual_date.hour}:{actual_date.minute}:{actual_date.second}'})
             self.session_db.commit()
             self.session_db.close()
         except Exception as e:
@@ -86,13 +98,13 @@ class ChatUsers():
             
     def get_chat_id(self):
         try:
-            query = text(f"""SELECT chat_id FROM chat_{self.user1.user_id}_{self.user2.user_id}""")
+            query = text(f"""SELECT chat_id FROM {self.chat_name}""")
             result = self.session_db.execute(query).fetchall()
             self.session_db.close()
             return result
         except Exception as e:
             print(e)
 if __name__ == '__main__':
-    chat1 = ChatUsers('user2', 'user1')
-    chat1.insert_new_message('legal','user2')
+    chat1 = ChatUsers('user1', 'user2')
+    chat1.insert_new_message('ahgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodiashgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodiashgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodiashgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodiashgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodias','user1')
     print(chat1.get_all_messages())
