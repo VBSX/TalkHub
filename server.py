@@ -2,7 +2,6 @@ from flask import Flask, render_template, redirect, url_for, request, session
 from user_handle.modules.password_encrypt import PasswordCrypter
 from user_handle.user_get import User
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from waitress import serve
 from flask_cors import CORS
 from db_handle.db_get import DatabaseGet
 from chat_handle.chat import ChatUsers
@@ -75,13 +74,20 @@ class ChatApp(Flask):
                 message = request.form['message']
                 # Get the sender's user ID and client ID from the session
                 sender_username = session['username']
-                
-                ChatUsers(sender_username, recipient_username).insert_new_message(message,  sender_username)
-                return jsonify({'status': 200, 'message': 'Mensagem enviada com sucesso!'})
+                if recipient_username == sender_username:
+                    return jsonify({'status': 400, 'message': 'Não é possível enviar mensagem para vocé mesmo.'})
+                elif message == '':
+                    return jsonify({'status': 400, 'message': 'Não é possível enviar mensagem vazia.'})
+                else:
+                    ChatUsers(sender_username, recipient_username).insert_new_message(message,  sender_username)
+                    return jsonify({'status': 200, 'message': 'Mensagem enviada com sucesso!'})
         else:
             return redirect(url_for('login'))   
          
     def handle_join_room(self, data):
+        # TODO:Implementar a lógica para verificar se o usuário já está na sala
+        # TODO: Implementar a lógica para verificar se o usuário está na lista de usuários da sala
+         
         room = data['room']
         print(room)
         sid = request.sid  # Get the session ID
@@ -92,10 +98,8 @@ class ChatApp(Flask):
         chat_name = data['chat_name']
         message = data['message']
         user_sender = data['userSender']
-        user_receptor = data['userReceptor']
         # Criação da slug para a sala
         slug = f'{chat_name}'
-
         # Envia a mensagem apenas para os clientes na sala correspondente
         emit('message_received', {'sender': user_sender, 'message': message}, room=slug)
 
@@ -104,7 +108,6 @@ class ChatApp(Flask):
             username_to_chat = request.form['username']
             username_of_starter_user = session['username']
             chat = ChatUsers(username_of_starter_user, username_to_chat)
-            # chat_name = f'chat{username_of_starter_user}{username_to_chat}'
             chat_name = chat.chat_name
             return redirect(url_for('display',chat_name=chat_name, user1=username_of_starter_user, user2=username_to_chat))
 
@@ -125,7 +128,11 @@ class ChatApp(Flask):
 
 if __name__ == '__main__':
     app = ChatApp()
-    app.socketio.run(app, host='0.0.0.0',debug=False)
-    # serve(app, host='0.0.0.0', port=5000)
+    debug = True
+    if debug == True:
+        app.socketio.run(app, host='127.0.0.1',debug=True)
+    else:
+        app.socketio.run(app, host='0.0.0.0',debug=False)
+
     
 
