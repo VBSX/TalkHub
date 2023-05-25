@@ -1,8 +1,13 @@
 /* Estilo para a tabela */
-table {
-    width: 50%;
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.user-table {
+    width: 100%;
     border-collapse: collapse;
-    margin:  0 auto;
 }
 
 th, td {
@@ -16,6 +21,24 @@ th {
 }
 
 /* Estilo para o botão de menu */
-.menu:hover .menu-content {
+.logout-link {
     display: block;
+    text-align: right;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: #333;
+}
+
+.chat-button {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.chat-button:hover {
+    background-color: #45a049;
 }

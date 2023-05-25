@@ -4,42 +4,43 @@
     <title>Chat Display</title>
     <link rel="stylesheet" href="/static/styles/chat.css">
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
-    <meta name="chat_name_js" CONTENT="{{chat_name}}">
+    <meta name="chat_name_js" content="{{chat_name}}">
     <script src="/static/scripts/chat.js"></script>
-
 </head>
 <body>
     <h1>Chat: {{ slug }}</h1>
-    <a href="/">Voltar</a>
+    
     {% for message in messages %}
     {% if message[3] == user1 %}
         <!-- sender -->
-        <div class="message-box" style="background-color: bisque;">
+        <div class="message-box sender-message-box">
             <p>{{ message[1] }}</p>
             <div class="message-box-sender">
-                <p></p>
                 <p>Você</p>
             </div>
         </div>
     {% else %}
         <!-- receptor -->
-        <div class="message-box" style="background-color: beige;">
+        <div class="message-box receiver-message-box">
             <p>{{ message[1] }}</p>
             <div class="message-box-sender">
-                <p>sender:</p>
                 <p>{{ message[3] }}</p>
             </div>
         </div>
     {% endif %}
     {% endfor %}
-    <form id="message-form">
-        <input type="hidden" name="chat_name" id="chat_name" value="{{ chat_name }}">
-        <input type="hidden" name="user_sender" id="user_sender" value="{{ user1 }}">
-        <input type="hidden" name="user_receptor" id="user_receptor" value="{{ user2 }}">
-        <input type="text" name="message" id="message_send">
-        <input type="button" value="enviar" onclick="submitForm()">
-    </form>
-   
-        
+    
+    <div class="div-form">
+        <form id="message-form">
+            <input type="hidden" name="chat_name" id="chat_name" value="{{ chat_name }}">
+            <input type="hidden" name="user_sender" id="user_sender" value="{{ user1 }}">
+            <input type="hidden" name="user_receptor" id="user_receptor" value="{{ user2 }}" >
+            <input type="text" name="message" id="message_send" placeholder="Coloque sua mensagem">
+            <input type="button" value="Enviar" id="send_button" onclick="submitForm()">
+        </form>
+    </div>
+    
+    <a href="/" class="back-button">Voltar</a>
+    
 </body>
 </html>

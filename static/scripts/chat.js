@@ -2,14 +2,17 @@ var socket = io.connect('http://' + document.domain + ':' + location.port);
 var metaElement = document.querySelector('meta[name="chat_name_js"]');
 var chat_name = metaElement.getAttribute('content');
 console.log(chat_name);
+
 socket.on('connect', function() {
-console.log('Connected to the server');
-joinroom();
+    console.log('Connected to the server');
+    joinroom();
+    scrollToBottom()
 });
 
 socket.on('message_received', function(data) {
     console.log('Mensagem recebida:', data);
     location.reload();
+    scrollToBottom();
 });
 
 function joinroom() {
@@ -21,6 +24,15 @@ function sendMessage(data) {
     // Enviar a mensagem para o servidor
     socket.emit('send_message', data);
 }
+
+function scrollToBottom() {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth' // Adicione essa opção se desejar uma animação suave
+    });
+  }
+  
+
 function submitForm() {
     var form = document.getElementById('message-form');
     var formData = new FormData(form);
@@ -51,6 +63,7 @@ function submitForm() {
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('message-form');
     var inputField = document.getElementById('message_send');
+    inputField.focus();
     form.addEventListener('submit', function(event) {
         event.preventDefault(); // Evitar o comportamento padrão de envio do formulário
         submitForm();
