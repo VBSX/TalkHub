@@ -44,5 +44,5 @@ class NewUser():
             return False
         
 if __name__ == '__main__':
-    user = NewUser('cleber','x9','clebin','123456')
+    user = NewUser('rafael','passa liso','rafel_lisin','123456')
 

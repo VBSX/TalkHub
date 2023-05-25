@@ -1,24 +1,28 @@
-from flask import Flask, render_template, redirect, url_for, request, session, request 
+from flask import Flask, render_template, redirect, url_for, request, session
 from user_handle.modules.password_encrypt import PasswordCrypter
 from user_handle.user_get import User
 from flask_socketio import SocketIO, emit, join_room, leave_room
-
-
+from waitress import serve
+from flask_cors import CORS
 from db_handle.db_get import DatabaseGet
 from chat_handle.chat import ChatUsers
 from flask import jsonify
+import eventlet
+
 
 class ChatApp(Flask):
     def __init__(self):
         super().__init__(__name__)
-        # self.app = Flask(__name__)
-        self.secret_key = 'My_Nice_secret_key'
+        self.config['SECRET_KEY'] = 'My_Nice_secret_key'
         self.register_routes()
+        eventlet.monkey_patch()
+        CORS(self)
         self.crypter = PasswordCrypter()
-        self.socketio = SocketIO(self)
+        self.socketio = SocketIO(self, async_mode='eventlet')
+                                #  ,cors_allowed_origins="http://0.0.0.0:5000")
         self.socketio.on_event('send_message', self.handle_message)
-        self.socketio.on_event('connect', self.handle_connect)
-
+        self.socketio.on_event('join_room', self.handle_join_room)
+        # self.socketio.run(self)
         self.db_get = DatabaseGet()
 
     def register_routes(self):
@@ -28,8 +32,7 @@ class ChatApp(Flask):
         self.route('/start_chat', methods=['POST'])(self.start_chat)
         self.route('/display/<chat_name>/<user1>/<user2>', methods=['GET','POST'])(self.display)
         self.route('/send_message', methods=['POST'])(self.send_message)
-
-
+        
     def index(self):
         if 'username' in session:
             user_list = self.db_get.get_all_users()
@@ -72,36 +75,37 @@ class ChatApp(Flask):
                 message = request.form['message']
                 # Get the sender's user ID and client ID from the session
                 sender_username = session['username']
+                
                 ChatUsers(sender_username, recipient_username).insert_new_message(message,  sender_username)
                 return jsonify({'status': 200, 'message': 'Mensagem enviada com sucesso!'})
         else:
             return redirect(url_for('login'))   
          
- 
-    def handle_connect(self):
-        room = request.args.get('room')
+    def handle_join_room(self, data):
+        room = data['room']
+        print(room)
         sid = request.sid  # Get the session ID
-        join_room(room)
-        # Additional logic using the sid if needed
-        
+        # Join the room
+        join_room(room, sid=sid)
+         
     def handle_message(self, data):
-        if 'username' in session:
-            sender_username = session['username']
-            chat_name = data['chatName']
-            message = data['message']
-            user_sender = data['userSender']
-            user_receptor = data['userReceptor']
+        chat_name = data['chat_name']
+        message = data['message']
+        user_sender = data['userSender']
+        user_receptor = data['userReceptor']
+        # Criação da slug para a sala
+        slug = f'{chat_name}'
 
-            # Criação da slug para a sala
-            slug = f'/display/{chat_name}/{user_sender}/{user_receptor}'
+        # Envia a mensagem apenas para os clientes na sala correspondente
+        emit('message_received', {'sender': user_sender, 'message': message}, room=slug)
 
-            # Envia a mensagem apenas para os clientes na sala correspondente
-            emit('message_received', {'sender': sender_username, 'message': message}, room=slug)
     def start_chat(self):
         if request.method == 'POST':
             username_to_chat = request.form['username']
             username_of_starter_user = session['username']
-            chat_name = f'chat{username_of_starter_user}{username_to_chat}'
+            chat = ChatUsers(username_of_starter_user, username_to_chat)
+            # chat_name = f'chat{username_of_starter_user}{username_to_chat}'
+            chat_name = chat.chat_name
             return redirect(url_for('display',chat_name=chat_name, user1=username_of_starter_user, user2=username_to_chat))
 
     def display(self,chat_name,user1, user2):
@@ -109,11 +113,6 @@ class ChatApp(Flask):
             if session['username'] == user1 or session['username'] == user2:
                 chat_users = ChatUsers(user1, user2)
                 messages = chat_users.get_all_messages()
-                # Criação da slug para a sala
-                slug = f'/display/{chat_name}/{user1}/{user2}'
-
-                # Adiciona o cliente à sala correspondente
-                join_room(slug)
                 return render_template('chat.html',chat_name=chat_name, messages=messages, user1=user1, user2=user2)
             else:
                 return redirect(url_for('index'))
@@ -126,4 +125,7 @@ class ChatApp(Flask):
 
 if __name__ == '__main__':
     app = ChatApp()
-    app.run(debug=True)
+    app.socketio.run(app, host='0.0.0.0',debug=False)
+    # serve(app, host='0.0.0.0', port=5000)
+    
+
