@@ -1,38 +1,45 @@
 var socket = io.connect('http://' + document.domain + ':' + location.port);
 var metaElement = document.querySelector('meta[name="chat_name_js"]');
+var metaElement_user_sender = document.querySelector('meta[name="user1"]');
 var chat_name = metaElement.getAttribute('content');
-console.log(chat_name);
+var user1 = metaElement_user_sender.getAttribute('content');
 
+console.log(chat_name);
+access_to_notification_push();
 socket.on('connect', function() {
     console.log('Connected to the server');
     joinroom();
     scrollToBottom()
 });
-
 socket.on('message_received', function(data) {
-    console.log('Mensagem recebida:', data);
     location.reload();
     scrollToBottom();
+    if (verify_if_user1_is_the_mensage_sender(data)==false) {
+        console.log('Mensagem recebida:', data);
+        send_notification('Mensagem recebida: '+ data.message+ ' \nde ' + data.sender);
+    }
 });
-
+function verify_if_user1_is_the_mensage_sender(data) {
+    if (data.sender == user1) {
+        return true;
+    } else {
+        return false;
+    }
+}
 function joinroom() {
     socket.emit('join_room', { room: chat_name });
     console.log('entrando na sala')
 }
-
 function sendMessage(data) {
-    // Enviar a mensagem para o servidor
     socket.emit('send_message', data);
 }
 
 function scrollToBottom() {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
-      behavior: 'smooth' // Adicione essa opção se desejar uma animação suave
+      behavior: 'smooth' // animação suave
     });
-  }
-  
-
+}
 function submitForm() {
     var form = document.getElementById('message-form');
     var formData = new FormData(form);
@@ -75,3 +82,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+function access_to_notification_push(){
+
+    var notification_permission = Notification.permission;
+    if (notification_permission === 'granted') {
+        console.log('Notificação já ativada');
+    } else if (notification_permission === 'denied') {
+        console.log('Notificação não ativada');
+    } else {
+        Notification.requestPermission(function(permission) {
+            if (permission === 'granted') {
+                console.log('Notificação ativada');
+            } else {
+                console.log('Notificação não ativada');
+            }
+        });
+    }
+}
+function send_notification(message){
+    new Notification(message);
+}

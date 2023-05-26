@@ -5,9 +5,11 @@
     <link rel="stylesheet" href="/static/styles/chat.css">
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <meta name="chat_name_js" content="{{chat_name}}">
+    <meta name="user1" content="{{ user1 }}">
     <script src="/static/scripts/chat.js"></script>
 </head>
 <body>
+
     <h1>Chat: {{ slug }}</h1>
     
     {% for message in messages %}
