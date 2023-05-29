@@ -1,13 +1,12 @@
 from flask import Flask, render_template, redirect, url_for, request, session
-from user_handle.modules.password_encrypt import PasswordCrypter
-from user_handle.user_get import User
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from components.user_handle.modules.password_encrypt import PasswordCrypter
+from components.user_handle.user_get import User
+from flask_socketio import SocketIO, emit, join_room
 from flask_cors import CORS
-from db_handle.db_get import DatabaseGet
-from chat_handle.chat import ChatUsers
+from components.db_handle.db_get import DatabaseGet
+from components.chat_handle.chat import ChatUsers
 from flask import jsonify
 import eventlet
-
 
 class ChatApp(Flask):
     def __init__(self):
@@ -18,10 +17,8 @@ class ChatApp(Flask):
         CORS(self)
         self.crypter = PasswordCrypter()
         self.socketio = SocketIO(self, async_mode='eventlet')
-                                #  ,cors_allowed_origins="http://0.0.0.0:5000")
         self.socketio.on_event('send_message', self.handle_message)
         self.socketio.on_event('join_room', self.handle_join_room)
-        # self.socketio.run(self)
         self.db_get = DatabaseGet()
 
     def register_routes(self):
@@ -64,7 +61,6 @@ class ChatApp(Flask):
                         return render_template('login.html', error='Usuário ou senha inválidos.')
                 except:
                     return render_template('login.html', error='Usuário ou senha inválidos.')
-
             return render_template('login.html')
         
     def send_message(self):
@@ -72,7 +68,6 @@ class ChatApp(Flask):
             if request.method == 'POST':
                 recipient_username = request.form['user_receptor']
                 message = request.form['message']
-                # Get the sender's user ID and client ID from the session
                 sender_username = session['username']
                 if recipient_username == sender_username:
                     return jsonify({'status': 400, 'message': 'Não é possível enviar mensagem para vocé mesmo.'})
@@ -85,23 +80,20 @@ class ChatApp(Flask):
             return redirect(url_for('login'))   
          
     def handle_join_room(self, data):
-        # TODO:Implementar a lógica para verificar se o usuário já está na sala
+        # TODO: Implementar a lógica para verificar se o usuário já está na sala
         # TODO: Implementar a lógica para verificar se o usuário está na lista de usuários da sala
-         
+
         room = data['room']
         print(room)
-        sid = request.sid  # Get the session ID
-        # Join the room
+        sid = request.sid  # Get the session ID of the client that sent the message
         join_room(room, sid=sid)
          
     def handle_message(self, data):
         chat_name = data['chat_name']
         message = data['message']
         user_sender = data['userSender']
-        # Criação da slug para a sala
-        slug = f'{chat_name}'
         # Envia a mensagem apenas para os clientes na sala correspondente
-        emit('message_received', {'sender': user_sender, 'message': message}, room=slug)
+        emit('message_received', {'sender': user_sender, 'message': message}, room=chat_name)
 
     def start_chat(self):
         if request.method == 'POST':
@@ -126,9 +118,11 @@ class ChatApp(Flask):
         session.pop('username', None)
         return redirect(url_for('login'))
 
+
+
 if __name__ == '__main__':
     app = ChatApp()
-    debug = True
+    debug = False
     if debug == True:
         app.socketio.run(app, host='127.0.0.1',debug=True)
     else:

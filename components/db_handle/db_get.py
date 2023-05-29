@@ -13,8 +13,11 @@ class DatabaseGet():
         self.session = Session()
     
     def get_all_users(self):
-        query = text(f'SELECT name, last_name, username, user_id FROM users')
-        result = self.session.execute(query).fetchall()
+        query = f'SELECT name, last_name, username, user_id FROM users'
+        self.do_query(query)
+    
+    def do_query(self, query):
+        result = self.session.execute(text(query)).fetchall()
         self.session.close()
         return result
     

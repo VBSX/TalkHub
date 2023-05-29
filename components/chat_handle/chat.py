@@ -5,9 +5,9 @@ sys.path.append(path)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
-from user_handle.user_get import User
+from components.user_handle.user_get import User
 import datetime
-from user_handle.modules.random_user_id import generate_random_chat_id
+from components.user_handle.modules.random_user_id import generate_random_chat_id
 
 class ChatUsers():
     def __init__(self, name_user1, name_user2):
@@ -45,7 +45,6 @@ class ChatUsers():
         elif result2 != []:
             return 'user2_main'
 
-        
                 
     def creat_chat_db(self):
         try:
@@ -104,6 +103,7 @@ class ChatUsers():
             return result
         except Exception as e:
             print(e)
+            
 if __name__ == '__main__':
     chat1 = ChatUsers('user1', 'user2')
     chat1.insert_new_message('ahgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodiashgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodiashgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodiashgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodiashgdiasdhasohdod haso dhashdoas hdoiahsoidhoias hdoiasoid aodaodjaoidoiaj oasjd oiasjd oi adajsodias','user1')
