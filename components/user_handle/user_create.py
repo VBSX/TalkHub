@@ -14,7 +14,7 @@ class NewUser():
         self.password = password
         self.user_id = generate_random_user_id(self.username)
         self.password_hash = crypter.encrypt(self.password)
-        engine = create_engine('sqlite:///db_handle/chat.db')
+        engine = create_engine('sqlite:///components/db_handle/chat.db')
         Session = sessionmaker(bind=engine)
         self.session_new_user = Session()
         exist_user = self.verify_if_user_exists()

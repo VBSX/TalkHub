@@ -122,7 +122,7 @@ class ChatApp(Flask):
 
 if __name__ == '__main__':
     app = ChatApp()
-    debug = False
+    debug = True
     if debug == True:
         app.socketio.run(app, host='127.0.0.1',debug=True)
     else:

@@ -10,7 +10,7 @@ sys.path.append(path)
 class User():
     def __init__(self, name):
         self.username = name
-        engine = create_engine('sqlite:///db_handle/chat.db')
+        engine = create_engine('sqlite:///components/db_handle/chat.db')
         Session = sessionmaker(bind=engine)
         self.session = Session()
         self.password = self.get_password()

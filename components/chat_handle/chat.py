@@ -13,7 +13,7 @@ class ChatUsers():
     def __init__(self, name_user1, name_user2):
         self.user1 = User(name_user1)
         self.user2 = User(name_user2)
-        engine = create_engine('sqlite:///db_handle/chat.db')
+        engine = create_engine('sqlite:///components/db_handle/chat.db')
         Session = sessionmaker(bind=engine)
         self.session_db = Session()
         table = self.check_if_table_exist()
